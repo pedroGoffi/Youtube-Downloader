@@ -86,17 +86,17 @@ class manager(downloadHandler):
         super().__main__()
 
     """ METHODS TO CONFIGURE THE CLASS """
-    def setPath(self, path:str)     -> "Internal Config":   self.path           = path
-    def setLink(self, link:str)     -> "Internal Config":   self.link           = str(link)
-    def setType(self, Type:str)     -> "Internal Config":   self.type           = Type
-    def highMode(self)              -> "Internal Config":   self.highMode       = True
-    def lowMode(self)               -> "Internal Config":   self.lowMode        = True
-    def songMode(self)              -> "Internal Config":   self.songMode       = True
-    def showProgress(self)          -> "Internal Config":   self.showProgress   = True
-    def videoMode(self)             -> "Internal Config":   self.videoMode      = True
-    def ignoreMode(self)            -> "Internal Config":   self.IGNORE         = True
-    def playListMode(self)          -> "Internal Config":   self.playListMode   = True
-    def setLimite(self, lim:int)    -> "Internal Config":   self.LIMITE         = int(lim)
+    def setPath(self, path:str)     -> "Internal Config":   self.path           = path; return self
+    def setType(self, Type:str)     -> "Internal Config":   self.type           = Type; return self
+    def highMode(self)              -> "Internal Config":   self.highMode       = True; return self
+    def lowMode(self)               -> "Internal Config":   self.lowMode        = True; return self
+    def songMode(self)              -> "Internal Config":   self.songMode       = True; return self
+    def showProgress(self)          -> "Internal Config":   self.showProgress   = True; return self
+    def videoMode(self)             -> "Internal Config":   self.videoMode      = True; return self
+    def ignoreMode(self)            -> "Internal Config":   self.IGNORE         = True; return self
+    def playListMode(self)          -> "Internal Config":   self.playListMode   = True; return self
+    def setLink(self, link:str)     -> "Internal Config":   self.link           = str(link); return self
+    def setLimite(self, lim:int)    -> "Internal Config":   self.LIMITE         = int(lim);  return self
 
 
     def testConflicts(self) -> "Optional Exit":
@@ -112,40 +112,27 @@ if __name__ == "__main__":
     manager = manager()
     for arg in sys.argv:
         if  (arg in ["-H","--help"]):       help()
-        elif(arg[0:3] == "-p="):            manager.setPath(f"{arg[3:]}/")
-        elif(arg[0:7] == "--path="):        manager.setPath(f"{arg[7:]}/")
         elif(arg in ["-h", "--high"]):      manager.highMode()
         elif(arg in ["-l", "--low"]):       manager.lowMode()
         elif(arg in ["-s", "--song"]):      manager.songMode()
+        elif(arg in ["-y",]):               manager.ignoreMode()
         elif(arg in ["-v", "--video"]):     manager.videoMode()
+        elif(arg in ["-p", "--playlist"]):  manager.playListMode()
         elif(arg[0:5] in ["-url="]):        manager.setLink(arg[5:])
         elif(arg[0:3] in "-t="):            manager.setType(arg[3:])
         elif(arg[0:7] in "--type="):        manager.setType(arg[7:])
-        elif(arg in ["-y",]):               manager.ignoreMode()
-        elif(arg in ["-p", "--playlist"]):  manager.playListMode()
         elif(arg[0:3] in ["-l=",]):         manager.setLimite(arg[3:])
         elif(arg[0:9] in ["--limite=",]):   manager.setLimite(arg[9:])
+        elif(arg[0:7] in ["--path=",]):        manager.setPath(f"{arg[7:]}/")
+        elif(arg[0:3] in ["-p=",]):            manager.setPath(f"{arg[3:]}/")
 
     if (len(sys.argv) == 1):
         print("Download music mode", end="\n> ")
         link = input("Link: ")
-        manager.songMode()
-        manager.showProgress()
-        manager.setLink(link)
+        manager.songMode() \
+            .showProgress() \
+            .setLink(link)
 
     manager.runDownloaderContext()
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
