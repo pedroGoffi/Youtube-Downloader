@@ -1,5 +1,7 @@
-from   pytube       import YouTube, Playlist
-import sys
+from    pytube      import YouTube, Playlist
+from    GAtena      import saveBySqlite
+from    datetime    import datetime
+import  sys
 
 def help() -> "Exit":
     print(f"    Howdy, this what made'd by Ayc. pspsps2069@gmail.com for contact.")
@@ -30,10 +32,18 @@ class downloadHandler:
     def downloadSong(self, link:str) -> "Optional Download":
         """ Inside streams ill filter only audio and only the extension of the
         managar class, then i'll take the first element and download. """
-        print(f"|TARGET ==>\t{ YouTube(link).title}\n|->MODE: AUDIO\n|->STATUS: ", end="")
-        try:    YouTube(link).streams.filter(only_audio=True,file_extension=self.type).first().download(self.path);print("OK\n",end="")
+        target = YouTube(link)
+        print(f"|TARGET ==>\t{ target.title}\n|->MODE: AUDIO\n|->STATUS: ", end="")
+        try:
+            target.streams \
+                .filter(only_audio=True,file_extension=self.type) \
+                .first().download(self.path)
+            print("OK\n",end="")
         except: print("ERROR\n",end="")
         print("|"+"-"*50)
+        date = datetime.now()
+        saveBySqlite(target.title,"audio",f"{date.year}-{date.month}-{date.day}", "YtdHistory")
+
 
 
     def downloadVideo(self, link:str) -> "Optional Download":
@@ -44,11 +54,19 @@ class downloadHandler:
         res = "480p"
         if (self.highMode == True): res = "720p"
         else:                       res = "360p"
-
-        print(f"|TARGET ==>\t{ YouTube(link).title}\n|->MODE: [VIDEO, resolution: {res}]\n|->STATUS: ", end="")
-        try:    YouTube(link).streams.order_by("resolution").filter(res=res).first().download(self.path);print("OK\n",end="")
+        target = YouTaube(link)
+        print(f"|TARGET ==>\t{ target.title}\n|->MODE: [VIDEO, resolution: {res}]\n|->STATUS: ", end="")
+        try:
+            target.streams \
+                .order_by("resolution") \
+                .filter(res=res) \
+                .first() \
+                .download(self.path)
+            print("OK\n",end="")
         except: print("ERROR", end="")
         print("|"+"="*50)
+        date = datetime.now()
+        saveBySqlite(target.title,"video",f"{date.year}-{date.month}-{date.day}", "YtdHistory")
 
     def downloadPlaylist(self, link:str) -> "Optional Download":
         for url in Playlist(link).video_urls:
@@ -134,5 +152,4 @@ if __name__ == "__main__":
             .setLink(link)
 
     manager.runDownloaderContext()
-
 
