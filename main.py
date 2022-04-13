@@ -30,16 +30,17 @@ class downloadHandler:
         # PLAYLIST MODE:  <09-04-22, pietra> #
 
     def downloadSong(self, link:str) -> "Optional Download":
-        """ Inside streams ill filter only audio and only the extension of the
+        """ Inside streams i'll filter only audio and only the extension of the
         managar class, then i'll take the first element and download. """
         target = YouTube(link)
-        print(f"|TARGET ==>\t{ target.title}\n|->MODE: AUDIO\n|->STATUS: ", end="")
+        print(f"|->TARGET: { target.title}\n|->MODE: AUDIO\n|->STATUS: ", end="")
         try:
             target.streams \
                 .filter(only_audio=True,file_extension=self.type) \
-                .first().download(self.path)
-            print("OK\n",end="")
-        except: print("ERROR\n",end="")
+                .first() \
+                .download(self.path)
+            print("OK")
+        except: print("ERROR")
         print("|"+"-"*50)
         date = datetime.now()
         saveBySqlite(target.title,"audio",f"{date.year}-{date.month}-{date.day}", "YtdHistory")
@@ -55,15 +56,15 @@ class downloadHandler:
         if (self.highMode == True): res = "720p"
         else:                       res = "360p"
         target = YouTaube(link)
-        print(f"|TARGET ==>\t{ target.title}\n|->MODE: [VIDEO, resolution: {res}]\n|->STATUS: ", end="")
+        print(f"|->TARGET: { target.title}\n|->MODE: [VIDEO, resolution: {res}]\n|->STATUS: ", end="")
         try:
             target.streams \
                 .order_by("resolution") \
                 .filter(res=res) \
                 .first() \
                 .download(self.path)
-            print("OK\n",end="")
-        except: print("ERROR", end="")
+            print("OK")
+        except: print("ERROR")
         print("|"+"="*50)
         date = datetime.now()
         saveBySqlite(target.title,"video",f"{date.year}-{date.month}-{date.day}", "YtdHistory")
