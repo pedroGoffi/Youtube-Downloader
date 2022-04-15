@@ -1,10 +1,14 @@
+from __future__     import annotations
 from    pytube      import YouTube, Playlist
 from    GAtena      import saveBySqlite
+from    Error       import Error
 from    datetime    import datetime
-import  sys
+from    sys         import argv
+from    os          import getenv
+
+USER = getenv("USER", getenv("USERNAME", "user"))
 
 def help() -> "Exit":
-    print(f"    Howdy, this what made'd by Ayc. pspsps2069@gmail.com for contact.")
     print(f"                    @       Help with args:")
     print(f"                   #*#      |--> -url=<url> will use the url in the context")
     print(f"                  *#*#*     |--> -p=<path> or --path=<path> will send the download to the path")
@@ -18,7 +22,7 @@ def help() -> "Exit":
     print(f"                            |--> -p or --playlist will consider the link as an playlist link")
     print(f"    LICENSE: Feel free to use this file as you want.")
     print(f"OBS: currently editing this, this was maded in 2 days. sorry for bugs :)")
-    exit(0)
+    Error.do.Exit(ExitCode=0,complement=Error.std.HelpExitCode)
 
 class downloadHandler:
     def __main__(self) -> "Select Mode":
@@ -27,11 +31,12 @@ class downloadHandler:
         if   (self.playListMode  == True):   self.downloadPlaylist(self.link)
         elif (self.videoMode     == True):   self.downloadVideo(self.link)
         elif (self.songMode      == True):   self.downloadSong(self.link)
-        # PLAYLIST MODE:  <09-04-22, pietra> #
+        Error.do.Exit(0, Error.std.SucessEndRun)
 
     def downloadSong(self, link:str) -> "Optional Download":
         """ Inside streams i'll filter only audio and only the extension of the
         managar class, then i'll take the first element and download. """
+        global USER
         target = YouTube(link)
         print(f"|->TARGET: { target.title}\n|->MODE: AUDIO\n|->STATUS: ", end="")
         try:
@@ -43,20 +48,27 @@ class downloadHandler:
         except: print("ERROR")
         print("|"+"-"*50)
         date = datetime.now()
-        saveBySqlite(target.title,"audio",f"{date.year}-{date.month}-{date.day}", "YtdHistory")
+
+        saveBySqlite(
+            target.title,
+            "audio",
+            f"{date.year}-{date.month}-{date.day}",
+            USER,
+            "YtdHistory"
+        )
 
 
 
     def downloadVideo(self, link:str) -> "Optional Download":
 
         """ Inside streams i'll filter the resolution and then download then
-        take the first element then ill download""" 
-
+        take the first element then ill download"""
+        global USER
         res = "480p"
         if (self.highMode == True): res = "720p"
         else:                       res = "360p"
         target = YouTaube(link)
-        print(f"|->TARGET: { target.title}\n|->MODE: [VIDEO, resolution: {res}]\n|->STATUS: ", end="")
+        print(f"|->TARGET: {target.title}\n|->MODE: [VIDEO, resolution: {res}]\n|->STATUS: ", end="")
         try:
             target.streams \
                 .order_by("resolution") \
@@ -67,7 +79,13 @@ class downloadHandler:
         except: print("ERROR")
         print("|"+"="*50)
         date = datetime.now()
-        saveBySqlite(target.title,"video",f"{date.year}-{date.month}-{date.day}", "YtdHistory")
+        saveBySqlite(
+            target.title,
+            "video",
+            f"{date.year}-{date.month}-{date.day}",
+            USER, 
+            "YtdHistory"
+        )
 
     def downloadPlaylist(self, link:str) -> "Optional Download":
         for url in Playlist(link).video_urls:
@@ -82,7 +100,7 @@ class downloadHandler:
             ask = input(f"Wanna download more {self.LIMITE} times? [y/n]")
             self.INDEX = 0
             if(ask.lower() == "n"):
-                exit(0)
+                Error.do.Exit(ExitCode=0, complement=Error.std.SucessEndRun)
 
 class manager(downloadHandler):
     """ Pre configuration for further use """
@@ -121,15 +139,18 @@ class manager(downloadHandler):
     def testConflicts(self) -> "Optional Exit":
         """ Test if some variables are ok for example video+song cant exist at
         same class!"""
-        if  (self.songMode == True and self.videoMode == True):     print("[ERROR]: Can't use VIDEO MODE + SONG MODE"); exit(69)
-        elif(self.lowMode  == True and self.highMode  == True):     print("[ERROR]: Can't use HIGHT MODE + LOW MODE");  exit(69)
+        if  (self.songMode == True and self.videoMode == True):
+            Error.do.Exit(ExitCode=2, complement=Error.std.MusicAndVideo)
+
+        elif(self.lowMode  == True and self.highMode  == True):
+            Error.do.Exit(ExitCode=2, complement=Error.std.HighAndLowQuality)
 
 
 
 """ MAIN FUNCTION """
 if __name__ == "__main__":
     manager = manager()
-    for arg in sys.argv:
+    for arg in argv:
         if  (arg in ["-H","--help"]):       help()
         elif(arg in ["-h", "--high"]):      manager.highMode()
         elif(arg in ["-l", "--low"]):       manager.lowMode()
@@ -142,10 +163,10 @@ if __name__ == "__main__":
         elif(arg[0:7] in "--type="):        manager.setType(arg[7:])
         elif(arg[0:3] in ["-l=",]):         manager.setLimite(arg[3:])
         elif(arg[0:9] in ["--limite=",]):   manager.setLimite(arg[9:])
-        elif(arg[0:7] in ["--path=",]):        manager.setPath(f"{arg[7:]}/")
-        elif(arg[0:3] in ["-p=",]):            manager.setPath(f"{arg[3:]}/")
+        elif(arg[0:7] in ["--path=",]):     manager.setPath(f"{arg[7:]}/")
+        elif(arg[0:3] in ["-p=",]):         manager.setPath(f"{arg[3:]}/")
 
-    if (len(sys.argv) == 1):
+    if (len(argv) == 1):
         print("Download music mode", end="\n> ")
         link = input("Link: ")
         manager.songMode() \

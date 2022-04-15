@@ -1,10 +1,19 @@
-import sqlite3
+
 defaultDB = "YtdHistory"
-def saveBySqlite(titulo, tipo, data, dbName=None):
+
+def saveBySqlite(
+        titulo, 
+        tipo, 
+        data, 
+        author, 
+        dbName=None):
+
+    #import sqlite3
+    from sqlite3 import connect, Cursor
     global defaultDB
     if not dbName:  dbName = defaultDB
 
-    connection = sqlite3.connect(dbName)
+    connection = connect(dbName)
     hand = connection.cursor()
 
     try:
@@ -13,7 +22,8 @@ def saveBySqlite(titulo, tipo, data, dbName=None):
             CREATE TABLE {dbName}  (
                 ID int,
                 INFO text NOT NULL,
-                DATE text NOT NULL
+                DATE text NOT NULL,
+                AUTHOR text NOT NULL
             )
             """
         )
@@ -22,7 +32,8 @@ def saveBySqlite(titulo, tipo, data, dbName=None):
             INSERT INTO {dbName} VALUES (
                 0,
                 '{tipo}:{titulo}',
-                '{data}'
+                '{data}',
+                '{author}'
             )
             """
         )
@@ -35,23 +46,30 @@ def saveBySqlite(titulo, tipo, data, dbName=None):
         hand.execute(
             f"""
             INSERT INTO {dbName} VALUES (
-                {index},
+                '{index}',
                 '{tipo}:{titulo}',
-                '{data}'
+                '{data}',
+                '{author}'
             )
             """
         )
     connection.commit()
 def showSQL(dbName):
-    connect = sqlite3.connect(dbName)
+    from sqlite3 import connect, Cursor
+    connect = connect(dbName)
     hand = connect.cursor()
-    dados = hand.execute(
-        f"""
-        SELECT * FROM {dbName}
-        """
-    )
-    for dado in dados:
-        print(dado)
+    try:
+        dados = hand.execute(
+            f"""
+            SELECT * FROM {dbName}
+            """
+        )
+        for dado in dados:
+            print(dado)
+        return True
+    except:
+        print(f"Not found any data in the db relative to: {dbName}")
+        return False
 
 if __name__ == "__main__":
     showSQL(defaultDB)
