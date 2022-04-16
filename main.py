@@ -100,7 +100,7 @@ class downloadHandler:
             ask = input(f"Wanna download more {self.LIMITE} times? [y/n]")
             self.INDEX = 0
             if(ask.lower() == "n"):
-                Context.std.Exit(complement=Error.std.SucessEndRun)
+                Context.std.Exit(complement=Context.std.SucessEndRun)
 
 class manager(downloadHandler):
     """ Pre configuration for further use """
