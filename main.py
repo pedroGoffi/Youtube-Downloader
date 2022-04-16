@@ -1,7 +1,6 @@
-from __future__     import annotations
 from    pytube      import YouTube, Playlist
 from    GAtena      import saveBySqlite
-from    Error       import Error
+from    Context     import Context
 from    datetime    import datetime
 from    sys         import argv
 from    os          import getenv
@@ -21,8 +20,8 @@ def help() -> "Exit":
     print(f"                @@@@@@@@    |--> -l=<K> or --limite=<K> will ask every K iterations if you want to continue")
     print(f"                            |--> -p or --playlist will consider the link as an playlist link")
     print(f"    LICENSE: Feel free to use this file as you want.")
-    print(f"OBS: currently editing this, this was maded in 2 days. sorry for bugs :)")
-    Error.do.Exit(ExitCode=0,complement=Error.std.HelpExitCode)
+    print(f"OBS: currently editing this, this was maded in {Context.daysWorkingOn} days. sorry for bugs :)")
+    Context.std.Exit(complement=Context.std.HelpExitCode)
 
 class downloadHandler:
     def __main__(self) -> "Select Mode":
@@ -31,22 +30,23 @@ class downloadHandler:
         if   (self.playListMode  == True):   self.downloadPlaylist(self.link)
         elif (self.videoMode     == True):   self.downloadVideo(self.link)
         elif (self.songMode      == True):   self.downloadSong(self.link)
-        Error.do.Exit(0, Error.std.SucessEndRun)
+        Context.std.Exit(Context.std.SucessEndRun)
 
     def downloadSong(self, link:str) -> "Optional Download":
         """ Inside streams i'll filter only audio and only the extension of the
         managar class, then i'll take the first element and download. """
         global USER
         target = YouTube(link)
-        print(f"|->TARGET: { target.title}\n|->MODE: AUDIO\n|->STATUS: ", end="")
+        Context.std.Display("green", f"TARGET  : { target.title }\n MODE   : AUDIO")
         try:
             target.streams \
                 .filter(only_audio=True,file_extension=self.type) \
                 .first() \
                 .download(self.path)
             print("OK")
-        except: print("ERROR")
-        print("|"+"-"*50)
+            Context.std.Display("green",    " STATUS : OK ")
+        except: Context.std.Display("red",  " STATUS : ERROR")
+        print("-"*50)
         date = datetime.now()
 
         saveBySqlite(
@@ -67,17 +67,17 @@ class downloadHandler:
         res = "480p"
         if (self.highMode == True): res = "720p"
         else:                       res = "360p"
-        target = YouTaube(link)
-        print(f"|->TARGET: {target.title}\n|->MODE: [VIDEO, resolution: {res}]\n|->STATUS: ", end="")
+        target = YouTube(link)
+        Context.std.Display("green",f"TARGET   : {target.title}\n MODE    : [VIDEO, resolution: {res}]")
         try:
             target.streams \
                 .order_by("resolution") \
                 .filter(res=res) \
                 .first() \
                 .download(self.path)
-            print("OK")
-        except: print("ERROR")
-        print("|"+"="*50)
+            Context.std.Display("green"," STATUS : OK")
+        except: Context.std.Display("red"," STATUS : ERROR")
+        print("-"*50)
         date = datetime.now()
         saveBySqlite(
             target.title,
@@ -100,7 +100,7 @@ class downloadHandler:
             ask = input(f"Wanna download more {self.LIMITE} times? [y/n]")
             self.INDEX = 0
             if(ask.lower() == "n"):
-                Error.do.Exit(ExitCode=0, complement=Error.std.SucessEndRun)
+                Context.std.Exit(complement=Error.std.SucessEndRun)
 
 class manager(downloadHandler):
     """ Pre configuration for further use """
@@ -140,10 +140,10 @@ class manager(downloadHandler):
         """ Test if some variables are ok for example video+song cant exist at
         same class!"""
         if  (self.songMode == True and self.videoMode == True):
-            Error.do.Exit(ExitCode=2, complement=Error.std.MusicAndVideo)
+            Context.Error.Exit(ExitCode=2, complement=Context.std.MusicAndVideo)
 
         elif(self.lowMode  == True and self.highMode  == True):
-            Error.do.Exit(ExitCode=2, complement=Error.std.HighAndLowQuality)
+            Context.Error.Exit(ExitCode=2, complement=Context.std.HighAndLowQuality)
 
 
 
