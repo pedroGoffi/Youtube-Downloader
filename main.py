@@ -30,7 +30,6 @@ class downloadHandler:
         if   (self.playListMode  == True):   self.downloadPlaylist(self.link)
         elif (self.videoMode     == True):   self.downloadVideo(self.link)
         elif (self.songMode      == True):   self.downloadSong(self.link)
-        Context.std.Exit(Context.std.SucessEndRun)
 
     def downloadSong(self, link:str) -> "Optional Download":
         """ Inside streams i'll filter only audio and only the extension of the
@@ -38,14 +37,22 @@ class downloadHandler:
         global USER
         target = YouTube(link)
         Context.std.Display("green", f"TARGET  : { target.title }\n MODE   : AUDIO")
-        try:
+        if self.notSafe == True:
             target.streams \
                 .filter(only_audio=True,file_extension=self.type) \
                 .first() \
                 .download(self.path)
-            print("OK")
-            Context.std.Display("green",    " STATUS : OK ")
-        except: Context.std.Display("red",  " STATUS : ERROR")
+
+
+        else:
+            try:
+                target.streams \
+                    .filter(only_audio=True,file_extension=self.type) \
+                    .first() \
+                    .download(self.path)
+                print("OK")
+                Context.std.Display("green",    " STATUS : OK ")
+            except: Context.std.Display("red",  " STATUS : ERROR")
         print("-"*50)
         date = datetime.now()
 
@@ -69,14 +76,21 @@ class downloadHandler:
         else:                       res = "360p"
         target = YouTube(link)
         Context.std.Display("green",f"TARGET   : {target.title}\n MODE    : [VIDEO, resolution: {res}]")
-        try:
+        if self.notSafe == True:
             target.streams \
-                .order_by("resolution") \
-                .filter(res=res) \
-                .first() \
-                .download(self.path)
-            Context.std.Display("green"," STATUS : OK")
-        except: Context.std.Display("red"," STATUS : ERROR")
+                    .order_by("resolution") \
+                    .filter(res=res) \
+                    .first() \
+                    .download(self.path)
+        else:
+            try:
+                target.streams \
+                    .order_by("resolution") \
+                    .filter(res=res) \
+                    .first() \
+                    .download(self.path)
+                Context.std.Display("green"," STATUS : OK")
+            except: Context.std.Display("red"," STATUS : ERROR")
         print("-"*50)
         date = datetime.now()
         saveBySqlite(
@@ -105,6 +119,7 @@ class downloadHandler:
 class manager(downloadHandler):
     """ Pre configuration for further use """
     highMode:       bool = False
+    notSafe:        bool = False
     lowMode:        bool = False
     videoMode:      bool = False
     songMode:       bool = False
@@ -132,8 +147,11 @@ class manager(downloadHandler):
     def videoMode(self)             -> "Internal Config":   self.videoMode      = True; return self
     def ignoreMode(self)            -> "Internal Config":   self.IGNORE         = True; return self
     def playListMode(self)          -> "Internal Config":   self.playListMode   = True; return self
+    def setUnsafeMode(self)         -> "Internal Config":   self.notSafe        = True; return self
+
     def setLink(self, link:str)     -> "Internal Config":   self.link           = str(link); return self
     def setLimite(self, lim:int)    -> "Internal Config":   self.LIMITE         = int(lim);  return self
+
 
 
     def testConflicts(self) -> "Optional Exit":
